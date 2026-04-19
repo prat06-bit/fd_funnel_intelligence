@@ -1,20 +1,15 @@
-"""LLM insights using NVIDIA's free API (OpenAI-compatible).
-Updated for decision engine integration — produces structured, actionable output.
-"""
-
 import os
 from openai import OpenAI
 
-# NVIDIA API configuration (OpenAI-compatible)
+# NVIDIA API configuration
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
 NVIDIA_MODEL = "meta/llama-3.3-70b-instruct"
 
 
 def _call_nvidia(prompt: str, max_tokens: int = 350) -> str:
-    """Call NVIDIA Llama API using OpenAI-compatible client."""
     if not NVIDIA_API_KEY:
-        return "⚠️ NVIDIA_API_KEY not set. Set it in your .env or run: set NVIDIA_API_KEY=your-key"
+        return " NVIDIA_API_KEY not set. Set it in your .env or run: set NVIDIA_API_KEY=your-key"
 
     try:
         client = OpenAI(
@@ -33,13 +28,11 @@ def _call_nvidia(prompt: str, max_tokens: int = 350) -> str:
         return completion.choices[0].message.content.strip()
 
     except Exception as e:
-        return f"⚠️ NVIDIA API error: {str(e)}"
+        return f" NVIDIA API error: {str(e)}"
 
 
-# ── Decision Engine Insights ──────────────────────────────────────────────────
-
+#  Decision Engine Insights 
 def intervention_explanation(user_profile: dict, intervention_plan: dict) -> str:
-    """Generate human-readable explanation for a decision engine output."""
     interventions_text = ""
     for i, intv in enumerate(intervention_plan.get("interventions", [])[:3], 1):
         interventions_text += f"\n  {i}. [{intv['intervention_type'].upper()}] {intv['action']} (Channel: {intv['channel']}, Expected lift: +{intv['expected_lift_pct']}%)"
@@ -74,7 +67,6 @@ Be data-driven, specific, and actionable. Use numbers."""
 
 
 def segment_insight(profile: dict) -> str:
-    """Generate business briefing for a customer segment."""
     prompt = f"""You are a senior fintech analyst at Blostem, a Fixed Deposit platform.
 Analyze this behavioral segment and produce a concise business briefing.
 
@@ -100,7 +92,6 @@ Be specific. Use numbers. No bullet points."""
 
 def portfolio_summary(metrics: dict, health_score: dict, n_users: int,
                       model_comparison: dict = None) -> str:
-    """Generate executive summary for leadership."""
     comparison_text = ""
     if model_comparison:
         comparison_text = f"""
@@ -131,7 +122,6 @@ Executive tone. Numbers-first. No jargon."""
 
 
 def whatif_narrative(simulation_result: dict) -> str:
-    """Generate narrative for a what-if simulation result."""
     scenario = simulation_result.get("scenario", {})
 
     prompt = f"""You are a growth strategist presenting a what-if analysis to stakeholders.
