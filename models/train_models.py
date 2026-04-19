@@ -34,7 +34,6 @@ from features.pipeline import FEATURE_COLS, TARGET_COL, STAGE_ORDER
 
 
 #  Segment label assignment 
-
 SEGMENT_LABELS_LIST = [
     "🟢 High-Value Converters",
     "🔵 Exploring Newcomers",
@@ -71,8 +70,8 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
 
     results = {}
 
-    #  MODEL 1: Conversion Predictor (LightGBM or XGBoost fallback)     
-    print("\n  [1/4] Training conversion predictor...")
+    #  MODEL 1: Conversion Predictor      
+    print("\n  Training conversion predictor...")
 
     spw = float((y_train == 0).sum() / max((y_train == 1).sum(), 1))
 
@@ -121,7 +120,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     y_pred = (y_proba >= best_thresh).astype(int)
     report = classification_report(y_test, y_pred, output_dict=True)
 
-    # Cross-validation
+    # Cross validation
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     cv_scores = cross_val_score(conv_model, X, y, cv=cv, scoring="roc_auc")
 
@@ -130,7 +129,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     print(f"    CV AUC: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
 
     #  Baseline comparison
-    print("\n  [1b] Training baseline (Logistic Regression)...")
+    print("\n  Training baseline (Logistic Regression)")
     scaler_lr = StandardScaler()
     X_train_sc = scaler_lr.fit_transform(X_train)
     X_test_sc = scaler_lr.transform(X_test)
@@ -153,8 +152,8 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         "improvement_f1": round((report["1"]["f1-score"] - lr_f1) / max(lr_f1, 0.01) * 100, 1),
     }
 
-    #  MODEL 2: Drop-off Stage Predictor (XGBoost multiclass)
-    print("\n  [2/4] Training drop-off stage predictor...")
+    #  MODEL 2: Drop-off Stage Predictor
+    print("\n  Training drop-off stage predictor")
 
     # Only train on non-converted users (they have a drop-off stage)
     non_converted = feature_df[feature_df[TARGET_COL] == 0].copy()
@@ -200,7 +199,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         print("    [WARN] Not enough non-converted users for drop-off model")
 
     #  MODEL 3: Behavioral Segmentation (KMeans)
-    print("\n  [3/4] Training behavioral segmentation...")
+    print("\n Training behavioral segmentation")
 
     seg_features = [
         "total_events", "total_time_in_funnel", "avg_scroll_depth",
