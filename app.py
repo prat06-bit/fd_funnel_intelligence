@@ -127,8 +127,6 @@ PLOTLY_LAYOUT = dict(
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(family="Sora", color="#8899bb", size=12),
     margin=dict(l=20, r=20, t=30, b=20),
-    xaxis=dict(gridcolor="#1e2a45", zeroline=False),
-    yaxis=dict(gridcolor="#1e2a45", zeroline=False),
 )
 COLORS = {
     "cyan": "#00c2ff", "green": "#4ade80", "red": "#ff4d5a",
@@ -599,13 +597,13 @@ with tab2:
                 ))
                 fig_shap.update_layout(
                     **PLOTLY_LAYOUT, height=320,
-                    yaxis=dict(gridcolor="#1e2a45"),
                     title=dict(text="SHAP Values: Green = helps conversion, Red = hurts conversion",
                                font=dict(size=11, color="#5a6a8a")),
                 )
+                fig_shap.update_yaxes(gridcolor="#1e2a45")
                 st.plotly_chart(fig_shap, use_container_width=True)
             except Exception as e:
-                st.markdown(f'<div class="insight-box">⚠ SHAP visualization error: {e}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box"> SHAP visualization error: {e}</div>', unsafe_allow_html=True)
 
         # ── LLM Insight ────────────────────────────────────────────────────
         st.markdown('<div class="sec-head"> AI Strategy Recommendation</div>', unsafe_allow_html=True)

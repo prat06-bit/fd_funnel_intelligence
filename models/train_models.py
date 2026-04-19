@@ -44,7 +44,6 @@ SEGMENT_LABELS_LIST = [
 
 
 def _assign_segment_labels(seg_profiles: list) -> dict:
-    """Assign meaningful labels by sorting on conversion rate & engagement."""
     sorted_profiles = sorted(
         seg_profiles,
         key=lambda x: (-x["conversion_rate"], -x["avg_events"]),
@@ -55,14 +54,9 @@ def _assign_segment_labels(seg_profiles: list) -> dict:
     return mapping
 
 
-# ── Main training function ────────────────────────────────────────────────────
-
+#  Main training function 
 def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
                    model_dir: str = "models/saved") -> dict:
-    """
-    Train all models and save artifacts.
-    Returns dict of all trained artifacts for immediate use.
-    """
     os.makedirs(model_dir, exist_ok=True)
 
     X = feature_df[FEATURE_COLS].copy()
@@ -110,7 +104,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
 
     conv_model.fit(X_train, y_train)
 
-    # Calibrate probabilities (Platt scaling)
+    # Calibrate probabilities
     cal_model = CalibratedClassifierCV(conv_model, cv=3, method="sigmoid")
     cal_model.fit(X_train, y_train)
 
@@ -135,7 +129,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     print(f"    F1:  {report['1']['f1-score']:.4f} | Threshold: {best_thresh:.3f}")
     print(f"    CV AUC: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
 
-    # ── Baseline comparison ────────────────────────────────────────────────
+    #  Baseline comparison
     print("\n  [1b] Training baseline (Logistic Regression)...")
     scaler_lr = StandardScaler()
     X_train_sc = scaler_lr.fit_transform(X_train)
@@ -159,9 +153,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         "improvement_f1": round((report["1"]["f1-score"] - lr_f1) / max(lr_f1, 0.01) * 100, 1),
     }
 
-    # ╔════════════════════════════════════════════════════════════════════════╗
-    # ║  MODEL 2: Drop-off Stage Predictor (XGBoost multiclass)             ║
-    # ╚════════════════════════════════════════════════════════════════════════╝
+    #  MODEL 2: Drop-off Stage Predictor (XGBoost multiclass)
     print("\n  [2/4] Training drop-off stage predictor...")
 
     # Only train on non-converted users (they have a drop-off stage)
@@ -207,9 +199,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         drop_acc = 0
         print("    [WARN] Not enough non-converted users for drop-off model")
 
-    # ╔════════════════════════════════════════════════════════════════════════╗
-    # ║  MODEL 3: Behavioral Segmentation (KMeans)                          ║
-    # ╚════════════════════════════════════════════════════════════════════════╝
+    #  MODEL 3: Behavioral Segmentation (KMeans)
     print("\n  [3/4] Training behavioral segmentation...")
 
     seg_features = [
@@ -257,9 +247,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         clean_label = p['label'].encode('ascii', 'ignore').decode('ascii').strip()
         print(f"      {clean_label}: {p['size']} users, {p['conversion_rate']:.1%} conv")
 
-    # ╔════════════════════════════════════════════════════════════════════════╗
-    # ║  SHAP EXPLAINABILITY                                                ║
-    # ╚════════════════════════════════════════════════════════════════════════╝
+    #  SHAP EXPLAINABILITY
     print("\n  [4/4] Computing SHAP values...")
 
     shap_values_test = None
@@ -290,9 +278,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     else:
         shap_importance = feat_imp  # fallback
 
-    # ╔════════════════════════════════════════════════════════════════════════╗
-    # ║  FUNNEL ANALYTICS (from raw events)                                 ║
-    # ╚════════════════════════════════════════════════════════════════════════╝
+        #  FUNNEL ANALYTICS (from raw events)
     total_users = events_df["user_id"].nunique()
     funnel_counts = {}
     for stage in ["landing", "fd_view", "details", "kyc", "deposit"]:
@@ -319,9 +305,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         curr_count = funnel_counts.get(stage_list[i], 0)
         drop_rates[stage_list[i]] = round(1 - curr_count / max(prev_count, 1), 4)
 
-    # ╔════════════════════════════════════════════════════════════════════════╗
-    # ║  SAVE ALL ARTIFACTS                                                 ║
-    # ╚════════════════════════════════════════════════════════════════════════╝
+    #  SAVE ALL ARTIFACTS
     print("\n  Saving artifacts...")
 
     joblib.dump(conv_model,     os.path.join(model_dir, "conv_model.pkl"))
