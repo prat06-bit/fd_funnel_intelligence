@@ -1,9 +1,3 @@
-"""
-Feature engineering pipeline for the FD Funnel Intelligence Engine.
-Transforms raw multi-table data (users, funnel_events, fd_transactions)
-into a single model-ready feature matrix.
-"""
-
 import numpy as np
 import pandas as pd
 
@@ -18,12 +12,10 @@ def build_features_from_input(input_dict):
 
     df = pd.DataFrame([input_dict])
 
-    # ── BASIC FEATURES (already coming) ──
-
-    # ── KYC FEATURES ──
+    #  KYC FEATURES 
     df["kyc_avg_time"] = df["time_on_kyc"] / df["kyc_attempts"].replace(0, 1)
 
-    # ── TOTAL TIME ──
+    #  TOTAL TIME 
     df["total_time_in_funnel"] = (
         df["time_on_landing"]
         + df["time_on_fd_view"]
@@ -31,7 +23,7 @@ def build_features_from_input(input_dict):
         + df["time_on_kyc"]
     )
 
-    # ── INTERACTION FEATURES (MATCH TRAINING EXACTLY) ──
+    #  INTERACTION FEATURES ─
     df["mobile_kyc_friction"] = df["device_mobile"] * df["kyc_attempts"]
 
     df["high_income_engagement"] = (
@@ -51,7 +43,7 @@ def build_features_from_input(input_dict):
         df["evening_session_ratio"] * df["details_max_scroll"]
     )
 
-    # ── DEFAULT VALUES FOR MISSING TRAINING FEATURES ──
+    #  DEFAULT VALUES FOR MISSING TRAINING FEATURES 
     defaults = {
         "n_devices_used": 1,
         "device_switched": 0,
@@ -67,7 +59,7 @@ def build_features_from_input(input_dict):
         if col not in df.columns:
             df[col] = val
 
-    # ── FINAL SAFETY (CRITICAL) ──
+    #  FINAL SAFETY 
     from features.pipeline import FEATURE_COLS
 
     for col in FEATURE_COLS:
@@ -79,15 +71,14 @@ def build_features_from_input(input_dict):
 def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.DataFrame) -> pd.DataFrame:
     df = users.copy()
 
-    # ── Demographics encoding ──────────────────────────────────────────────
+    #  Demographics encoding
     df["income_num"] = df["income_bracket"].map(INCOME_MAP)
     df["device_mobile"] = (df["device_type"] == "mobile").astype(int)
     df["device_desktop"] = (df["device_type"] == "desktop").astype(int)
     df["referral_paid"] = df["referral_source"].isin(["google_ads", "social_media"]).astype(int)
     df["referral_partner"] = (df["referral_source"] == "partner_referral").astype(int)
 
-    # ── Funnel progression features ────────────────────────────────────────
-    # Max stage reached (ordinal)
+    #  Funnel progression features 
     user_max_stage = events.groupby("user_id")["stage"].apply(
         lambda x: max(STAGE_ORDER.get(s, 0) for s in x)
     ).rename("max_stage_idx")
@@ -107,8 +98,7 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
     # Re-entry: did user come back after dropping?
     df["has_reentry"] = (df["funnel_attempts_feat"] > 1).astype(int)
 
-    # ── Time-based features ────────────────────────────────────────────────
-    # Session hour statistics
+    # Time-based features    
     user_hour_stats = events.groupby("user_id")["hour_of_day"].agg(
         session_hour_mean="mean",
         session_hour_std="std",
@@ -117,20 +107,17 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
     df["session_hour_mean"] = df["session_hour_mean"].fillna(12)
     df["session_hour_std"] = df["session_hour_std"].fillna(0)
 
-    # Evening session ratio (18-21 = deliberate intent)
     evening_flags = events.copy()
     evening_flags["is_evening"] = evening_flags["hour_of_day"].between(18, 21).astype(int)
     user_evening = evening_flags.groupby("user_id")["is_evening"].mean().rename("evening_session_ratio")
     df = df.merge(user_evening, left_on="user_id", right_index=True, how="left")
     df["evening_session_ratio"] = df["evening_session_ratio"].fillna(0)
 
-    # Weekday ratio
     user_weekday = events.groupby("user_id")["is_weekday"].mean().rename("weekday_ratio")
     df = df.merge(user_weekday, left_on="user_id", right_index=True, how="left")
     df["weekday_ratio"] = df["weekday_ratio"].fillna(0.5)
 
-    # ── Engagement depth features ──────────────────────────────────────────
-    # Average time on each stage
+    #  Engagement depth features 
     for stage in ["landing", "fd_view", "details", "kyc"]:
         stage_time = events[events["stage"] == stage].groupby("user_id")[
             "time_on_stage_seconds"
@@ -138,44 +125,38 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
         df = df.merge(stage_time, left_on="user_id", right_index=True, how="left")
         df[f"time_on_{stage}"] = df[f"time_on_{stage}"].fillna(0)
 
-    # Total time in funnel
     user_total_time = events.groupby("user_id")["time_on_stage_seconds"].sum().rename("total_time_in_funnel")
     df = df.merge(user_total_time, left_on="user_id", right_index=True, how="left")
     df["total_time_in_funnel"] = df["total_time_in_funnel"].fillna(0)
 
-    # Average scroll depth
     user_scroll = events.groupby("user_id")["page_scroll_depth"].mean().rename("avg_scroll_depth")
     df = df.merge(user_scroll, left_on="user_id", right_index=True, how="left")
     df["avg_scroll_depth"] = df["avg_scroll_depth"].fillna(0)
 
-    # Max scroll depth on details page
     details_scroll = events[events["stage"] == "details"].groupby("user_id")[
         "page_scroll_depth"
     ].max().rename("details_max_scroll")
     df = df.merge(details_scroll, left_on="user_id", right_index=True, how="left")
     df["details_max_scroll"] = df["details_max_scroll"].fillna(0)
 
-    # ── KYC friction features ──────────────────────────────────────────────
-    # KYC stage entries (attempts)
+    #  KYC friction features  
     kyc_events = events[events["stage"] == "kyc"]
     kyc_attempts = kyc_events.groupby("user_id").size().rename("kyc_attempts")
     df = df.merge(kyc_attempts, left_on="user_id", right_index=True, how="left")
     df["kyc_attempts"] = df["kyc_attempts"].fillna(0).astype(int)
 
-    # KYC drop: reached kyc but didn't proceed quickly (friction proxy)
-    # NOTE: We use a time-based proxy rather than the label-dependent version
+    # KYC drop: reached kyc but didn't proceed quickly 
     kyc_time = events[events["stage"] == "kyc"].groupby("user_id")["time_on_stage_seconds"].mean().rename("kyc_avg_time")
     df = df.merge(kyc_time, left_on="user_id", right_index=True, how="left")
     df["kyc_avg_time"] = df["kyc_avg_time"].fillna(0)
 
-    # ── Device switching ───────────────────────────────────────────────────
+    #  Device switching 
     user_devices = events.groupby("user_id")["device_type"].nunique().rename("n_devices_used")
     df = df.merge(user_devices, left_on="user_id", right_index=True, how="left")
     df["n_devices_used"] = df["n_devices_used"].fillna(1).astype(int)
     df["device_switched"] = (df["n_devices_used"] > 1).astype(int)
 
-    # ── Stage velocity features ────────────────────────────────────────────
-    # Average time between stages (progression speed)
+    #  Stage velocity features        
     def _stage_velocity(grp):
         grp = grp.sort_values("timestamp")
         if len(grp) < 2:
@@ -196,7 +177,7 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
     df["avg_stage_gap_sec"] = df["avg_stage_gap_sec"].fillna(0)
     df["fastest_transition_sec"] = df["fastest_transition_sec"].fillna(0)
 
-    # ── Financial intent signals (from transactions) ───────────────────────
+    #  Financial intent signals   
     if len(transactions) > 0:
         txn_stats = transactions.groupby("user_id").agg(
             n_fds_booked=("transaction_id", "count"),
@@ -218,7 +199,7 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
     for col in ["n_fds_booked", "avg_fd_amount", "total_fd_amount", "avg_tenor", "avg_rate", "n_banks"]:
         df[col] = df[col].fillna(0)
 
-    # Amount to income ratio (financial intent proxy)
+    # Amount to income ratio 
     df["income_midpoint"] = df["income_bracket"].map(INCOME_MIDPOINTS)
     df["amount_to_income_ratio"] = np.where(
         df["income_midpoint"] > 0,
@@ -226,7 +207,7 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
         0,
     )
 
-    # ── Interaction features ───────────────────────────────────────────────
+    #  Interaction features 
     df["mobile_kyc_friction"] = df["device_mobile"] * df["kyc_attempts"]
     df["high_income_engagement"] = (df["income_num"] >= 3).astype(int) * df["total_time_in_funnel"]
     df["tier3_mobile"] = ((df["city_tier"] == 3) & (df["device_mobile"] == 1)).astype(int)
@@ -235,8 +216,7 @@ def build_features(users: pd.DataFrame, events: pd.DataFrame, transactions: pd.D
 
     return df
 
-
-# ── Feature column list for ML ─────────────────────────────────────────────────
+#  Feature column list for ML 
 
 FEATURE_COLS = [
     # Demographics
