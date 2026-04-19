@@ -1,18 +1,11 @@
-"""
-What-If Intervention Simulator.
-Allows users to simulate the impact of interventions on funnel conversion
-using counterfactual reasoning.
-"""
-
 import numpy as np
 import pandas as pd
 from typing import Optional
 
-
 STAGE_NAMES = {0: "Landing", 1: "FD View", 2: "Details", 3: "KYC", 4: "Deposit"}
 STAGE_KEYS = ["landing", "fd_view", "details", "kyc", "deposit"]
 
-# ── Predefined intervention scenarios ──────────────────────────────────────────
+#  Predefined intervention scenarios 
 
 SCENARIOS = {
     "simplify_mobile_kyc": {
@@ -73,7 +66,6 @@ SCENARIOS = {
 
 
 def _apply_filter(df: pd.DataFrame, target_filter: dict) -> pd.DataFrame:
-    """Apply a target filter dictionary to select affected users."""
     mask = pd.Series(True, index=df.index)
     for key, value in target_filter.items():
         if key.endswith("_gt"):
@@ -100,10 +92,6 @@ def simulate_intervention(
     scenario_key: str,
     avg_fd_amount: float = 50_000,
 ) -> dict:
-    """
-    Simulate a what-if scenario.
-    Returns baseline vs. intervention comparison.
-    """
     if scenario_key not in SCENARIOS:
         return {"error": f"Unknown scenario: {scenario_key}"}
 
@@ -127,16 +115,14 @@ def simulate_intervention(
     if affected_stage in stage_keys:
         stage_idx = stage_keys.index(affected_stage)
     else:
-        stage_idx = 2  # default to details
+        stage_idx = 2  
 
     # Calculate intervention impact
     lift_pct = scenario["lift_pct"] / 100
     affected_pct = n_affected / max(total_users, 1)
 
-    # New funnel values after intervention
     intervention_values = baseline_values.copy()
     for i in range(stage_idx, len(intervention_values)):
-        # The lift applies to the affected users' progression from the target stage onward
         current_drop = 1 - (intervention_values[i] / max(intervention_values[max(i-1, 0)], 1))
         reduced_drop = current_drop * (1 - lift_pct * affected_pct)
         if i > 0:
@@ -144,20 +130,16 @@ def simulate_intervention(
                 intervention_values[i-1] * (1 - reduced_drop)
             )
 
-    # Ensure intervention values don't exceed previous stage or go below baseline somehow
     for i in range(1, len(intervention_values)):
         intervention_values[i] = min(intervention_values[i], intervention_values[i-1])
         intervention_values[i] = max(intervention_values[i], baseline_values[i])
 
-    # Additional conversions
     additional_conversions = intervention_values[-1] - baseline_values[-1]
     additional_revenue = additional_conversions * avg_fd_amount
 
-    # Cost
     total_cost = n_affected * scenario["cost_per_user"]
     roi = additional_revenue / max(total_cost, 1) if total_cost > 0 else float("inf")
 
-    # Conversion rate change
     baseline_conv = baseline_values[-1] / max(baseline_values[0], 1) * 100
     intervention_conv = intervention_values[-1] / max(intervention_values[0], 1) * 100
 
@@ -178,15 +160,11 @@ def simulate_intervention(
         "conversion_lift_pp": round(intervention_conv - baseline_conv, 1),
     }
 
-
 def simulate_all_scenarios(
     feature_df: pd.DataFrame,
     funnel_data: dict,
     avg_fd_amount: float = 50_000,
 ) -> pd.DataFrame:
-    """
-    Run all predefined scenarios and return comparison table.
-    """
     rows = []
     for key, scenario in SCENARIOS.items():
         result = simulate_intervention(feature_df, funnel_data, key, avg_fd_amount)
