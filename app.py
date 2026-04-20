@@ -15,7 +15,7 @@ sys.path.insert(0, ROOT)
 from dotenv import load_dotenv
 load_dotenv(os.path.join(ROOT, ".env"))
 
-# ── PAGE CONFIG ────────────────────────────────────────────────────────────────
+# PAGE CONFIG 
 st.set_page_config(
     page_title="FD Funnel Intelligence · Decision Engine",
     page_icon="⚡",
@@ -23,18 +23,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── DESIGN TOKENS & CSS ───────────────────────────────────────────────────────
+# DESIGN TOKENS & CSS 
 st.markdown(
     """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700;800&display=swap');
 
-/* ── base ── */
+/*  base  */
 html, body, [class*="css"] { font-family: 'Sora', sans-serif; }
 .main { background: #060a14; }
 .block-container { padding: 1.5rem 3rem; max-width: 1500px; }
 
-/* ── cards ── */
+/*  cards  */
 .kpi-card {
     background: linear-gradient(145deg, #0f1629 0%, #0a0f1e 100%);
     border: 1px solid #1e2a45;
@@ -47,7 +47,7 @@ html, body, [class*="css"] { font-family: 'Sora', sans-serif; }
 .kpi-val  { font-family:'Sora',sans-serif; font-size:1.85rem; font-weight:800; letter-spacing:-1px; }
 .kpi-label{ font-size:.68rem; color:#5a6a8a; text-transform:uppercase; letter-spacing:.12em; margin-top:4px; }
 
-/* ── health score ring ── */
+/*  health score ring  */
 .health-ring {
     background: linear-gradient(145deg, #0f1629 0%, #0a0f1e 100%);
     border: 1px solid #1e2a45;
@@ -58,19 +58,19 @@ html, body, [class*="css"] { font-family: 'Sora', sans-serif; }
 .health-score { font-size: 3.2rem; font-weight: 800; letter-spacing: -2px; }
 .health-label { font-size: .72rem; color: #5a6a8a; text-transform: uppercase; letter-spacing: .14em; margin-top: 4px; }
 
-/* ── section heading ── */
+/*  section heading  */
 .sec-head {
     font-size: 1rem; font-weight: 600; color: #cdd9f5;
     border-left: 3px solid #00c2ff; padding-left: 12px;
     margin: 1.4rem 0 .8rem 0; letter-spacing: .02em;
 }
 
-/* ── risk/priority badges ── */
+/*  risk/priority badges  */
 .badge-high   { background:#ff293010; color:#ff4d5a; border:1px solid #ff293040; border-radius:6px; padding:3px 10px; font-size:.78rem; font-weight:600; }
 .badge-medium { background:#f59e0b10; color:#fbbf24; border:1px solid #f59e0b40; border-radius:6px; padding:3px 10px; font-size:.78rem; font-weight:600; }
 .badge-low    { background:#22c55e10; color:#4ade80; border:1px solid #22c55e40; border-radius:6px; padding:3px 10px; font-size:.78rem; font-weight:600; }
 
-/* ── insight box ── */
+/*  insight box  */
 .insight-box {
     background: #0a0f1e; border: 1px solid #1e2a45;
     border-left: 3px solid #00c2ff;
@@ -79,7 +79,7 @@ html, body, [class*="css"] { font-family: 'Sora', sans-serif; }
     white-space: pre-wrap;
 }
 
-/* ── intervention card ── */
+/*  intervention card  */
 .intervention-card {
     background: linear-gradient(145deg, #0d1420 0%, #0a0f1e 100%);
     border: 1px solid #1e2a45; border-left: 3px solid #a78bfa;
@@ -91,7 +91,7 @@ html, body, [class*="css"] { font-family: 'Sora', sans-serif; }
 .intv-action { font-size: .88rem; color: #cdd9f5; margin: 6px 0; line-height: 1.5; }
 .intv-meta { font-size: .75rem; color: #5a6a8a; }
 
-/* ── tab bar ── */
+/*  tab bar */
 div[data-testid="stTabs"] > div > div > button {
     color:#5a6a8a !important; font-family:'Sora',sans-serif !important;
     font-size:.82rem !important; padding:8px 16px !important;
@@ -101,16 +101,16 @@ div[data-testid="stTabs"] > div > div > button[aria-selected="true"] {
 }
 div[data-testid="stTabs"] > div:first-child { border-bottom:1px solid #1e2a45 !important; }
 
-/* ── sliders & inputs ── */
+/*  sliders & inputs  */
 .stSlider > label, .stSelectbox > label, .stNumberInput > label { color:#5a6a8a !important; font-size:.8rem !important; }
 [data-baseweb="select"] > div { background:#0f1629 !important; border-color:#1e2a45 !important; }
 .stSlider [data-baseweb="slider"] div[role="slider"] { background:#00c2ff !important; }
 
-/* ── delta widget ── */
+/*  delta widget  */
 .delta-positive { color: #4ade80; font-weight: 600; }
 .delta-negative { color: #ff4d5a; font-weight: 600; }
 
-/* ── scrollbar ── */
+/*  scrollbar  */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: #060a14; }
 ::-webkit-scrollbar-thumb { background: #1e2a45; border-radius: 4px; }
@@ -121,7 +121,7 @@ code { font-family:'DM Mono',monospace; color:#00c2ff; background:#0f1629; paddi
     unsafe_allow_html=True,
 )
 
-# ── PLOTLY THEME ──────────────────────────────────────────────────────────────
+# PLOTLY THEME 
 PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
@@ -141,7 +141,7 @@ SEG_COLORS = {
 }
 
 
-# ── LOAD / TRAIN ───────────────────────────────────────────────────────────────
+#  LOAD / TRAIN 
 @st.cache_resource(show_spinner=False)
 def load_all():
     from data.generate_data import generate_fd_data
@@ -191,7 +191,7 @@ def load_all():
     return results, FEATURE_COLS
 
 
-with st.spinner("⚡ Initialising decision engine (first run trains models on 2,000 users)…"):
+with st.spinner(" Initialising decision engine (first run trains models on 2,000 users)…"):
     from features.pipeline import FEATURE_COLS, FEATURE_LABELS
     results, FEAT_COLS = load_all()
 
@@ -210,12 +210,12 @@ drop_model  = results.get("drop_model")
 shap_explainer = results.get("shap_explainer")
 
 
-# ── Compute Funnel Health Score ────────────────────────────────────────────────
+#  Compute Funnel Health Score 
 from engine.decision_engine import compute_funnel_health_score
 health = compute_funnel_health_score(funnel_data, drop_rates, metrics)
 
 
-# ── HEADER ────────────────────────────────────────────────────────────────────
+#  HEADER 
 st.markdown(
     """
 <div style="padding:20px 0 6px 0">
@@ -234,7 +234,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── KPI ROW + HEALTH SCORE ────────────────────────────────────────────────────
+#  KPI ROW + HEALTH SCORE 
 conv_rate = health["conversion_rate"]
 total_users = funnel_data["values"][0] if funnel_data["values"] else 0
 
@@ -265,20 +265,18 @@ for col, (val, label, color) in zip([c1, c2, c3, c4, c5, c6], kpis):
 st.markdown("<br>", unsafe_allow_html=True)
 
 
-# ── TABS ──────────────────────────────────────────────────────────────────────
+#  TABS 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊  Funnel Analytics",
-    "🎯  Prediction Engine",
-    "⚡  What-If Simulator",
-    "👥  Segments & Insights",
-    "🏗️  Model & Architecture",
-    "🚨  Priority Queue",
+    " Funnel Analytics",
+    " Prediction Engine",
+    " What-If Simulator",
+    " Segments & Insights",
+    " Model & Architecture",
+    " Priority Queue",
 ])
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TAB 1 — FUNNEL ANALYTICS                                                  ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#  TAB 1 — FUNNEL ANALYTICS                                                  
 with tab1:
     col_funnel, col_drops = st.columns([1.4, 1])
 
@@ -316,7 +314,7 @@ with tab1:
             fig_drop.update_layout(**PLOTLY_LAYOUT, height=340, showlegend=False)
             st.plotly_chart(fig_drop, use_container_width=True)
 
-    # ── Feature importance (SHAP-based) ────────────────────────────────────
+    #  Feature importance
     st.markdown('<div class="sec-head">Top Conversion Drivers (SHAP Feature Importance)</div>', unsafe_allow_html=True)
 
     col_fi1, col_fi2 = st.columns(2)
@@ -353,7 +351,7 @@ with tab1:
         fig_fi.update_yaxes(autorange="reversed", gridcolor="#1e2a45")
         st.plotly_chart(fig_fi, use_container_width=True)
 
-    # ── Drop-off by device and city tier ───────────────────────────────────
+    #  Drop-off by device and city tier 
     if len(df) > 0:
         col_dev, col_tier = st.columns(2)
 
@@ -390,9 +388,7 @@ with tab1:
             st.plotly_chart(fig_tier, use_container_width=True)
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TAB 2 — PREDICTION ENGINE                                                 ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#  TAB 2 — PREDICTION ENGINE                                                 
 with tab2:
     st.markdown('<div class="sec-head">Individual User Prediction + Decision Engine</div>', unsafe_allow_html=True)
 
@@ -414,7 +410,7 @@ with tab2:
         kyc_attempts   = st.slider("KYC Attempts", 0, 5, 1)
         funnel_attempts = st.slider("Funnel Re-entries", 1, 4, 1)
 
-    predict_btn = st.button("⚡  Run Decision Engine", use_container_width=True, type="primary")
+    predict_btn = st.button("  Run Decision Engine", use_container_width=True, type="primary")
 
     if predict_btn:
         from features.pipeline import INCOME_MAP, STAGE_ORDER
@@ -424,7 +420,7 @@ with tab2:
         max_stage_idx = stage_map.get(max_stage, 2)
         inc_num = INCOME_MAP.get(income_bracket, 2)
 
-        # Build feature vector (match FEATURE_COLS order)
+        # Build feature vector 
         input_dict = {
             "age": age, "city_tier": city_tier_val, "income_num": inc_num,
             "device_mobile": 1 if device_type == "mobile" else 0,
@@ -533,7 +529,7 @@ with tab2:
             st.plotly_chart(fig_g, use_container_width=True)
 
         with rc2:
-            st.markdown('<div class="sec-head">🎯 Decision Engine — Recommended Interventions</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head"> Decision Engine — Recommended Interventions</div>', unsafe_allow_html=True)
             if plan.interventions:
 
                 for intv in plan.interventions[:4]:
@@ -556,7 +552,7 @@ with tab2:
                 new_prob = getattr(best_action, "expected_new_prob", conv_prob)
                 new_prob = min(new_prob, 1.0)
 
-                st.markdown('<div class="sec-head">📊 Impact Simulation</div>', unsafe_allow_html=True)
+                st.markdown('<div class="sec-head"> Impact Simulation</div>', unsafe_allow_html=True)
 
                 c1, c2 = st.columns(2)
 
@@ -568,12 +564,12 @@ with tab2:
 
             else:
                 st.markdown(
-                    '<div class="insight-box" style="color:#4ade80;text-align:center">✅ Low risk — no intervention needed</div>',
+                    '<div class="insight-box" style="color:#4ade80;text-align:center"> Low risk — no intervention needed</div>',
                     unsafe_allow_html=True
                 )
-        # ── SHAP Explanation ───────────────────────────────────────────────
+        #  SHAP Explanation 
         if shap_explainer is not None:
-            st.markdown('<div class="sec-head">🔍 SHAP — Why This Prediction</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head"> SHAP — Why This Prediction</div>', unsafe_allow_html=True)
             try:
                 import shap
                 sv = shap_explainer.shap_values(input_df)
@@ -605,14 +601,14 @@ with tab2:
             except Exception as e:
                 st.markdown(f'<div class="insight-box"> SHAP visualization error: {e}</div>', unsafe_allow_html=True)
 
-        # ── LLM Insight ────────────────────────────────────────────────────
+        #  LLM Insight 
         st.markdown('<div class="sec-head"> AI Strategy Recommendation</div>', unsafe_allow_html=True)
         with st.spinner("NVIDIA Llama-3.3-70B analysing intervention plan…"):
             from utils.llm_insights import intervention_explanation
             insight = intervention_explanation(input_dict, plan.to_dict())
         st.markdown(f'<div class="insight-box">{insight}</div>', unsafe_allow_html=True)
 
-        # ── Retention Playbook ─────────────────────────────────────────────
+        #  Retention Playbook 
         st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
         st.markdown('<div class="sec-head"> Recommended Retention Actions</div>', unsafe_allow_html=True)
 
@@ -694,7 +690,7 @@ with tab3:
         else:
             scenario = result["scenario"]
 
-            # ── Impact KPIs ────────────────────────────────────────────────
+            #  Impact KPIs 
             ik1, ik2, ik3, ik4 = st.columns(4)
             with ik1:
                 st.markdown(
@@ -716,7 +712,7 @@ with tab3:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Side-by-side funnel ────────────────────────────────────────
+            #  Side-by-side funnel 
             st.markdown('<div class="sec-head">Baseline vs. Intervention — Funnel Comparison</div>', unsafe_allow_html=True)
 
             fc1, fc2 = st.columns(2)
@@ -744,18 +740,18 @@ with tab3:
                                                   font=dict(size=13, color="#4ade80")))
                 st.plotly_chart(fig_intv, use_container_width=True)
 
-            # ── LLM narrative ──────────────────────────────────────────────
-            st.markdown('<div class="sec-head">🤖 AI Business Case Summary</div>', unsafe_allow_html=True)
+            #  LLM narrative 
+            st.markdown('<div class="sec-head"> AI Business Case Summary</div>', unsafe_allow_html=True)
             with st.spinner("Generating what-if narrative…"):
                 from utils.llm_insights import whatif_narrative
                 narrative = whatif_narrative(result)
             st.markdown(f'<div class="insight-box">{narrative}</div>', unsafe_allow_html=True)
 
-    # ── All scenarios comparison ───────────────────────────────────────────
+    #  All scenarios comparison 
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
     st.markdown('<div class="sec-head">All Scenario Comparison</div>', unsafe_allow_html=True)
 
-    if st.button("📊  Compare All Scenarios", use_container_width=True):
+    if st.button(" Compare All Scenarios", use_container_width=True):
         scenarios_df = simulate_all_scenarios(df, funnel_data)
         if len(scenarios_df) > 0:
             st.dataframe(scenarios_df, use_container_width=True, hide_index=True)
@@ -763,9 +759,7 @@ with tab3:
             st.warning("No scenarios could be simulated with current data.")
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TAB 4 — SEGMENTS & AI INSIGHTS                                            ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#  TAB 4 — SEGMENTS & AI INSIGHTS                                            
 with tab4:
     st.markdown('<div class="sec-head">Behavioral Segments (KMeans, k=4)</div>', unsafe_allow_html=True)
 
@@ -860,7 +854,7 @@ with tab4:
 
     # AI Segment Insight
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-    st.markdown('<div class="sec-head">🤖 AI Segment Intelligence — Powered by NVIDIA Llama-3.3-70B</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head"> AI Segment Intelligence — Powered by NVIDIA Llama-3.3-70B</div>', unsafe_allow_html=True)
 
     selected_seg = st.selectbox(
         "Select a segment to analyse",
@@ -875,11 +869,9 @@ with tab4:
         st.markdown(f'<div class="insight-box">{text}</div>', unsafe_allow_html=True)
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TAB 5 — MODEL & ARCHITECTURE                                              ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#  TAB 5 — MODEL & ARCHITECTURE                                              
 with tab5:
-    # ── Model Performance ──────────────────────────────────────────────────
+    #  Model Performance 
     st.markdown('<div class="sec-head">Model Performance</div>', unsafe_allow_html=True)
 
     mc1, mc2, mc3, mc4, mc5 = st.columns(5)
@@ -900,7 +892,7 @@ with tab5:
                 unsafe_allow_html=True,
             )
 
-    # ── Model Comparison ───────────────────────────────────────────────────
+    #  Model Comparison 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="sec-head">Model Comparison — Baseline vs. Primary</div>', unsafe_allow_html=True)
 
@@ -921,13 +913,13 @@ with tab5:
     st.dataframe(comp_df, use_container_width=True, hide_index=True)
     st.markdown(
         f'<div class="insight-box" style="border-left-color:{COLORS["green"]}">'
-        f'📈 <strong style="color:#4ade80">+{comparison["improvement_auc"]}% AUC improvement</strong> over baseline | '
+        f'<strong style="color:#4ade80">+{comparison["improvement_auc"]}% AUC improvement</strong> over baseline | '
         f'<strong style="color:#4ade80">+{comparison["improvement_f1"]}% F1 improvement</strong>'
         f'</div>',
         unsafe_allow_html=True,
     )
 
-    # ── Health Score Breakdown ─────────────────────────────────────────────
+    #  Health Score Breakdown 
     st.markdown('<div class="sec-head">Funnel Health Score Breakdown</div>', unsafe_allow_html=True)
 
     hc1, hc2, hc3, hc4 = st.columns(4)
@@ -945,7 +937,7 @@ with tab5:
                 unsafe_allow_html=True,
             )
 
-    # ── Architecture Card ──────────────────────────────────────────────────
+    #  Architecture Card 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="sec-head">System Architecture</div>', unsafe_allow_html=True)
     st.markdown(
@@ -967,23 +959,21 @@ with tab5:
         unsafe_allow_html=True,
     )
 
-    # ── Executive Summary ──────────────────────────────────────────────────
+    #  Executive Summary 
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-    st.markdown('<div class="sec-head">📋 Executive Portfolio Summary</div>', unsafe_allow_html=True)
-    if st.button("📋  Generate Executive Summary", use_container_width=True):
+    st.markdown('<div class="sec-head"> Executive Portfolio Summary</div>', unsafe_allow_html=True)
+    if st.button("Generate Executive Summary", use_container_width=True):
         with st.spinner("Generating executive summary…"):
             from utils.llm_insights import portfolio_summary
             summary = portfolio_summary(metrics, health, len(df), comparison)
         st.markdown(f'<div class="insight-box">{summary}</div>', unsafe_allow_html=True)
 
 
-# ╔══════════════════════════════════════════════════════════════════════════════╗
-# ║  TAB 6 — INTERVENTION PRIORITY QUEUE                                       ║
-# ╚══════════════════════════════════════════════════════════════════════════════╝
+#  TAB 6 — INTERVENTION PRIORITY QUEUE                                       
 with tab6:
     from engine.decision_engine import batch_evaluate, build_priority_queue
 
-    st.markdown('<div class="sec-head">🚨 Real-Time Intervention Priority Queue</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head"> Real-Time Intervention Priority Queue</div>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color:#5a6a8a;font-size:.82rem;margin-bottom:1rem">'
         'The decision engine has evaluated every user in the dataset. '
@@ -994,10 +984,10 @@ with tab6:
     )
 
     if len(df) > 0:
-        pq_btn = st.button("🚨  Build Priority Queue", use_container_width=True, type="primary")
+        pq_btn = st.button("Build Priority Queue", use_container_width=True, type="primary")
 
         if pq_btn:
-            with st.spinner("⚡ Running decision engine on all users…"):
+            with st.spinner("Running decision engine on all users…"):
                 # Run batch evaluation
                 conv_proba = cal_model.predict_proba(df[FEAT_COLS].fillna(0))[:, 1]
 
@@ -1021,7 +1011,7 @@ with tab6:
 
             queue_df = build_priority_queue(plans, top_n=50)
 
-            # ── Summary KPIs ──────────────────────────────────────────────────────────
+            #  Summary KPIs 
             high_risk = sum(1 for p in plans if p.risk_level == "high")
             med_risk  = sum(1 for p in plans if p.risk_level == "medium")
             total_rev_at_risk = sum(p.estimated_revenue_at_risk for p in plans)
@@ -1046,8 +1036,8 @@ with tab6:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Revenue-at-Risk Waterfall (top 20 users) ────────────────────────
-            st.markdown('<div class="sec-head">💰 Revenue at Risk — Top 20 Users by Priority Score</div>', unsafe_allow_html=True)
+            #  Revenue-at-Risk Waterfall 
+            st.markdown('<div class="sec-head"> Revenue at Risk — Top 20 Users by Priority Score</div>', unsafe_allow_html=True)
 
             top_plans = sorted(
                 [p for p in plans if p.interventions and p.risk_level in ("high", "medium")],
@@ -1075,12 +1065,12 @@ with tab6:
                 )
                 st.plotly_chart(fig_wf, use_container_width=True)
 
-            # ── Risk Distribution Pie ─────────────────────────────────────────────────
+            #  Risk Distribution Pie 
             st.markdown("<br>", unsafe_allow_html=True)
             pq_c1, pq_c2 = st.columns([2, 1])
 
             with pq_c1:
-                st.markdown('<div class="sec-head">📊 Ranked Intervention Queue (Top 50)</div>', unsafe_allow_html=True)
+                st.markdown('<div class="sec-head"> Ranked Intervention Queue (Top 50)</div>', unsafe_allow_html=True)
                 if len(queue_df) > 0:
                     # Color-code risk level column
                     st.dataframe(
@@ -1119,7 +1109,7 @@ with tab6:
                 st.markdown('<div class="sec-head">Intervention Types</div>', unsafe_allow_html=True)
                 intv_counts: dict = {}
                 for p in plans:
-                    for iv in p.interventions[:1]:  # top intervention only
+                    for iv in p.interventions[:1]: 
                         intv_counts[iv.intervention_type] = intv_counts.get(iv.intervention_type, 0) + 1
                 if intv_counts:
                     fig_intv_types = go.Figure(go.Bar(
@@ -1143,7 +1133,7 @@ with tab6:
         st.warning("⚠ No feature data available. Run setup.py first to generate and train.")
 
 
-# ── FOOTER ────────────────────────────────────────────────────────────────────
+#  FOOTER 
 st.markdown(
     "<div style='text-align:center;color:#2a3a55;font-size:.72rem;margin-top:2.5rem;padding-top:1rem;"
     "border-top:1px solid #1e2a45'>"
