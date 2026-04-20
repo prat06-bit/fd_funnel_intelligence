@@ -70,7 +70,6 @@ FEATURE_LABELS: dict[str, str] = {
     "evening_details_depth":  "Evening × Details Scroll",
 }
 
-
 #  Shared interaction builder 
 def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
     df["mobile_kyc_friction"]    = df["device_mobile"] * df["kyc_attempts"]
@@ -79,7 +78,6 @@ def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
     df["reentry_details_time"]   = df["has_reentry"] * df["time_on_details"]
     df["evening_details_depth"]  = df["evening_session_ratio"] * df["details_max_scroll"]
     return df
-
 
 #  Inference path 
 def build_features_from_input(input_dict: dict) -> pd.DataFrame:
@@ -111,7 +109,6 @@ def build_features_from_input(input_dict: dict) -> pd.DataFrame:
             df[col] = 0
 
     return df[FEATURE_COLS]
-
 
 #  Training path 
 def build_features(
@@ -199,7 +196,7 @@ def build_features(
     _FILLNA: dict[str, float | int] = {
         "max_stage_idx":          0,
         "total_events":           0,
-        "funnel_attempts_feat":   1,    # at least 1 attempt
+        "funnel_attempts_feat":   1,    
         "session_hour_mean":      12,
         "evening_session_ratio":  0,
         "weekday_ratio":          0.5,

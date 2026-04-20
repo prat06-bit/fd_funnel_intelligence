@@ -4,7 +4,6 @@ import re
 from dataclasses import dataclass, field, asdict
 from typing import Callable
 
-
 #  Constants 
 class Threshold:
     HIGH_CHURN        = 0.60
@@ -158,10 +157,11 @@ def generate_playbook(
         for rule in _rules()
         if rule.condition(customer, churn_prob)
     ]
-    ffired.sort(
-    key=lambda a: (a.priority, a.churn_reduction),
-    reverse=True
-)
+    
+    fired.sort(
+        key=lambda a: (a.priority, a.churn_reduction),
+        reverse=True
+    )
     return fired[:max_actions]
 
 
