@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from features.pipeline import FEATURE_COLS, TARGET_COL, STAGE_ORDER
 
 
-# ── Segment labels ─────────────────────────────────────────────────────────────
+#    Segment labels     
 SEGMENT_LABELS_LIST = [
     "🟢 High-Value Converters",
     "🔵 Exploring Newcomers",
@@ -41,16 +41,7 @@ SEGMENT_LABELS_LIST = [
     "🔴 Dormant Drop-offs",
 ]
 
-# ── Drop-off model: leak-free feature set ──────────────────────────────────────
-# EXCLUDED from FEATURE_COLS because they directly encode which stage was reached:
-#   time_on_landing / fd_view / details / kyc  → non-zero means stage was reached
-#   total_time_in_funnel  → sum of all stage times
-#   kyc_attempts, kyc_avg_time  → KYC-stage specific
-#   details_max_scroll    → Details-stage specific
-#   mobile_kyc_friction   → device_mobile × kyc_attempts  (leaks KYC)
-#   reentry_details_time  → has_reentry × time_on_details (leaks Details)
-#   evening_details_depth → evening_ratio × details_max_scroll (leaks Details)
-# Using full FEATURE_COLS gave drop-off F1 = 1.0000 — textbook data leakage.
+#  Drop-off model: leak-free feature set  
 _DROP_FEATURE_COLS = [
     "age", "city_tier", "income_num", "device_mobile",
     "referral_paid", "referral_partner",
@@ -94,13 +85,12 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         X, y, test_size=0.20, random_state=42, stratify=y,
     )
 
-    # ── MODEL 1: Conversion Predictor ─────────────────────────────────────────
-    print("\n  Training conversion predictor...")
+    #  MODEL 1: Conversion Predictor 
+    print("\n  Training conversion predictor")
 
     spw = float((y_train == 0).sum() / max((y_train == 1).sum(), 1))
 
     if HAS_LIGHTGBM:
-        # class_weight='balanced' and scale_pos_weight conflict — use only scale_pos_weight
         conv_model = lgb.LGBMClassifier(
             n_estimators=400,
             max_depth=6,
@@ -170,7 +160,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         "improvement_f1":  round((primary_f1 - lr_f1) / max(lr_f1, 0.01) * 100, 1),
     }
 
-    # ── MODEL 2: Drop-off Stage Predictor (leak-free) ─────────────────────────
+    #  MODEL 2: Drop-off Stage Predictor 
     print("\n  Training drop-off stage predictor")
     print(f"    Using {len(_DROP_FEATURE_COLS)} leak-free features "
           f"(excluded {len(FEATURE_COLS) - len(_DROP_FEATURE_COLS)} stage-time columns)")
@@ -218,7 +208,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     else:
         print("    [WARN] Not enough non-converted users for drop-off model")
 
-    # ── MODEL 3: Behavioral Segmentation (KMeans) ─────────────────────────────
+    #  MODEL 3: Behavioral Segmentation 
     print("\n  Training behavioral segmentation")
 
     missing_seg = [c for c in _SEG_FEATURES if c not in feature_df.columns]
@@ -261,8 +251,8 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         clean_label = p["label"].encode("ascii", "ignore").decode().strip()
         print(f"      {clean_label}: {p['size']} users, {p['conversion_rate']:.1%} conv")
 
-    # ── SHAP Explainability ────────────────────────────────────────────────────
-    print("\n  [4/4] Computing SHAP values...")
+    #  SHAP Explainability 
+    print("\n  Computing SHAP values")
 
     shap_values_test = None
     explainer        = None
@@ -289,8 +279,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         else feat_imp
     )
 
-    # ── Funnel Analytics ───────────────────────────────────────────────────────
-    # This block is at function scope — not inside any conditional branch above.
+    #  Funnel Analytics 
     funnel_counts = {}
     for stage in ["landing", "fd_view", "details", "kyc", "deposit"]:
         funnel_counts[stage] = int(
@@ -320,8 +309,8 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         for i in range(1, len(stage_list))
     }
 
-    # ── Save all artifacts ─────────────────────────────────────────────────────
-    print("\n  Saving artifacts...")
+    # Save all artifacts 
+    print("\n  Saving artifacts")
 
     def _dump(obj, name):
         joblib.dump(obj, os.path.join(model_dir, name))
