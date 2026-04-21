@@ -1,4 +1,9 @@
+"""
+FD Funnel Intelligence Engine
+Blostem AI Builder Hackathon 2026 — Track 03: Data Analytics & Insights
+"""
 from __future__ import annotations
+
 import os
 import sys
 
@@ -15,7 +20,7 @@ sys.path.insert(0, ROOT)
 from dotenv import load_dotenv
 load_dotenv(os.path.join(ROOT, ".env"))
 
-#  Page config 
+# ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="FD Funnel Intelligence · Decision Engine",
     page_icon="⚡",
@@ -23,7 +28,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-#  CSS 
+# ── Landing page gate ──────────────────────────────────────────────────────────
+if "app_entered" not in st.session_state:
+    st.session_state.app_entered = False
+
+if not st.session_state.app_entered:
+    from landing_page import render_landing_page
+    if render_landing_page():
+        st.session_state.app_entered = True
+        st.rerun()
+    st.stop()
+
+
+# ── CSS ────────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700;800&display=swap');
@@ -96,7 +113,7 @@ code { font-family:'DM Mono',monospace; color:#00c2ff; background:#0f1629; paddi
 </style>
 """, unsafe_allow_html=True)
 
-#  Plotly theme 
+# ── Plotly theme ───────────────────────────────────────────────────────────────
 PLOTLY_LAYOUT = dict(
     paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
     font=dict(family="Sora", color="#8899bb", size=12),
@@ -114,9 +131,13 @@ SEG_COLORS = {
 }
 
 
-#  Load / train 
+# ── Load / train ───────────────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=False)
 def load_all() -> dict:
+    """
+    Always returns a plain dict of artefacts — whether loading from disk
+    or training fresh. Callers never need to know about TrainingResult.
+    """
     from data.generate_data import generate_fd_data
     from features.pipeline import build_features, FEATURE_COLS
     from models.train_models import train_and_save
@@ -128,6 +149,7 @@ def load_all() -> dict:
         data       = generate_fd_data(2000, save_dir=os.path.join(ROOT, "data", "raw"))
         feature_df = build_features(data["users"], data["funnel_events"], data["fd_transactions"])
         tr         = train_and_save(feature_df, data["funnel_events"], model_dir=model_dir)
+        # Normalise TrainingResult dataclass → plain dict
         artefacts = {
             "conv_model":       tr.conv_model,
             "cal_model":        tr.cal_model,
@@ -174,7 +196,7 @@ def load_all() -> dict:
     return artefacts
 
 
-with st.spinner(" Initialising decision engine (first run trains on 2,000 users)…"):
+with st.spinner("⚙️ Initialising decision engine (first run trains on 2,000 users)…"):
     from features.pipeline import FEATURE_COLS, FEATURE_LABELS
     artefacts = load_all()
 
@@ -195,7 +217,7 @@ shap_explainer = artefacts.get("shap_explainer")
 from engine.decision_engine import compute_funnel_health_score
 health = compute_funnel_health_score(funnel_data, drop_rates, metrics)
 
-#  Header 
+# ── Header ─────────────────────────────────────────────────────────────────────
 st.markdown("""
 <div style="padding:20px 0 6px 0">
   <div style="font-size:.65rem;color:#00c2ff;text-transform:uppercase;letter-spacing:.2em;margin-bottom:6px">
@@ -211,7 +233,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-#  KPI row 
+# ── KPI row ────────────────────────────────────────────────────────────────────
 conv_rate   = health["conversion_rate"]
 total_users = funnel_data["values"][0] if funnel_data["values"] else 0
 h_score     = health["overall_score"]
@@ -236,14 +258,16 @@ for col, (val, label, color, card_cls, val_cls, lbl_cls) in zip([c1,c2,c3,c4,c5,
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-#  Tabs 
+# ── Tabs ───────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    " Funnel Analytics", " Prediction Engine", " What-If Simulator",
-    " Segments & Insights", " Model & Architecture", " Priority Queue",
+    "📊 Funnel Analytics", "⚡ Prediction Engine", "🔮 What-If Simulator",
+    "👥 Segments & Insights", "🏗️ Model & Architecture", "🎯 Priority Queue",
 ])
 
 
-#  TAB 1 — FUNNEL ANALYTICS 
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 1 — FUNNEL ANALYTICS                                                  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab1:
     col_funnel, col_drops = st.columns([1.4, 1])
 
@@ -329,7 +353,9 @@ with tab1:
             st.plotly_chart(fig_tier, use_container_width=True)
 
 
-#  TAB 2 — PREDICTION ENGINE                                                 
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 2 — PREDICTION ENGINE                                                 ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab2:
     st.markdown('<div class="sec-head">Individual User Prediction + Decision Engine</div>', unsafe_allow_html=True)
 
@@ -348,7 +374,7 @@ with tab2:
         kyc_attempts    = st.slider("KYC Attempts", 0, 5, 1)
         funnel_attempts = st.slider("Funnel Re-entries", 1, 4, 1)
 
-    predict_btn = st.button(" Run Decision Engine", use_container_width=True, type="primary")
+    predict_btn = st.button("⚡ Run Decision Engine", use_container_width=True, type="primary")
 
     if predict_btn:
         from features.pipeline import INCOME_MAP, build_features_from_input
@@ -358,6 +384,8 @@ with tab2:
         max_stage_idx = stage_map.get(max_stage, 2)
         inc_num       = INCOME_MAP.get(income_bracket, 2)
 
+        # Build input dict — only keys that build_features_from_input expects.
+        # kyc_drop removed: it is not in FEATURE_COLS and was silently ignored.
         input_dict = {
             "user_id":                "INTERACTIVE",
             "age":                    age,
@@ -392,6 +420,8 @@ with tab2:
 
         input_df = build_features_from_input(input_dict)
 
+        # Calibrated model outputs a proper probability — no rescaling needed.
+        # The old `conv_prob = raw_prob / 0.067` capped nearly everything at 100%.
         conv_prob = float(cal_model.predict_proba(input_df)[0, 1])
 
         predicted_drop = max_stage_idx
@@ -446,7 +476,7 @@ with tab2:
             st.plotly_chart(fig_g, use_container_width=True)
 
         with rc2:
-            st.markdown('<div class="sec-head"> Decision Engine — Recommended Interventions</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head">⚡ Decision Engine — Recommended Interventions</div>', unsafe_allow_html=True)
 
             if plan.interventions:
                 for intv in plan.interventions[:4]:
@@ -481,7 +511,7 @@ with tab2:
 
         # SHAP explanation
         if shap_explainer is not None:
-            st.markdown('<div class="sec-head"> SHAP — Why This Prediction</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head">🔍 SHAP — Why This Prediction</div>', unsafe_allow_html=True)
             try:
                 import shap
                 sv = shap_explainer.shap_values(input_df)
@@ -506,24 +536,24 @@ with tab2:
                 fig_shap.update_yaxes(gridcolor="#1e2a45")
                 st.plotly_chart(fig_shap, use_container_width=True)
             except Exception as e:
-                st.markdown(f'<div class="insight-box"> SHAP error: {e}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="insight-box">⚠️ SHAP error: {e}</div>', unsafe_allow_html=True)
 
         # LLM insight
-        st.markdown('<div class="sec-head"> AI Strategy Recommendation</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-head">🤖 AI Strategy Recommendation</div>', unsafe_allow_html=True)
         with st.spinner("NVIDIA Llama-3.3-70B analysing intervention plan…"):
             from utils.llm_insights import intervention_explanation
             insight = intervention_explanation(input_dict, plan.to_dict())
         st.markdown(f'<div class="insight-box">{insight}</div>', unsafe_allow_html=True)
 
-        # Retention playbook 
+        # Retention playbook (using improved utils/playbook.py)
         st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-        st.markdown('<div class="sec-head"> Recommended Retention Actions</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-head">📋 Recommended Retention Actions</div>', unsafe_allow_html=True)
 
         from utils.retention_playbook import generate_playbook, playbook_summary
 
         customer_for_playbook = {
             "num_fds_booked":    0,
-            "support_tickets":   kyc_attempts,       
+            "support_tickets":   kyc_attempts,       # KYC friction ≈ support friction
             "last_login_days":   0 if funnel_attempts > 1 else 90,
             "platform_sessions": funnel_attempts + 2,
             "income_bracket":    income_bracket,
@@ -564,7 +594,9 @@ with tab2:
         )
 
 
-#  TAB 3 — WHAT IF SIMULATOR 
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 3 — WHAT-IF SIMULATOR                                                 ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab3:
     from engine.simulator import SCENARIOS, simulate_intervention, simulate_all_scenarios
 
@@ -582,7 +614,7 @@ with tab3:
         format_func=lambda k: f"{SCENARIOS[k]['name']} — {SCENARIOS[k]['description'][:60]}…",
     )
 
-    if st.button(" Simulate Scenario", use_container_width=True, type="primary"):
+    if st.button("🔮 Simulate Scenario", use_container_width=True, type="primary"):
         try:
             result = simulate_intervention(df, funnel_data, scenario_key)
         except (ValueError, KeyError) as e:
@@ -636,7 +668,7 @@ with tab3:
                 )
                 st.plotly_chart(fig_intv, use_container_width=True)
 
-            st.markdown('<div class="sec-head"> AI Business Case Summary</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head">🤖 AI Business Case Summary</div>', unsafe_allow_html=True)
             with st.spinner("Generating what-if narrative…"):
                 from utils.llm_insights import whatif_narrative
                 narrative = whatif_narrative(result)
@@ -648,7 +680,7 @@ with tab3:
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
     st.markdown('<div class="sec-head">All Scenario Comparison</div>', unsafe_allow_html=True)
 
-    if st.button(" Compare All Scenarios", use_container_width=True):
+    if st.button("📊 Compare All Scenarios", use_container_width=True):
         scenarios_df = simulate_all_scenarios(df, funnel_data)
         if len(scenarios_df):
             st.dataframe(
@@ -666,8 +698,9 @@ with tab3:
             st.warning("No scenarios could be simulated with current data.")
 
 
-
-#  TAB 4 — SEGMENTS & AI INSIGHTS                 
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 4 — SEGMENTS & AI INSIGHTS                                            ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab4:
     st.markdown('<div class="sec-head">Behavioral Segments (KMeans, k=4)</div>', unsafe_allow_html=True)
 
@@ -741,13 +774,13 @@ with tab4:
         st.plotly_chart(fig_r, use_container_width=True)
 
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-    st.markdown('<div class="sec-head"> AI Segment Intelligence — NVIDIA Llama-3.3-70B</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head">🤖 AI Segment Intelligence — NVIDIA Llama-3.3-70B</div>', unsafe_allow_html=True)
 
     selected_seg = st.selectbox(
         "Select segment",
         [p["label"] for p in sorted(seg_profiles, key=lambda x: -x["conversion_rate"])],
     )
-    if st.button(" Generate Segment Strategy", use_container_width=True):
+    if st.button("🤖 Generate Segment Strategy", use_container_width=True):
         profile = next(p for p in seg_profiles if p["label"] == selected_seg)
         with st.spinner(f"Analysing {selected_seg}…"):
             from utils.llm_insights import segment_insight
@@ -755,7 +788,9 @@ with tab4:
         st.markdown(f'<div class="insight-box">{text}</div>', unsafe_allow_html=True)
 
 
-#  TAB 5 — MODEL & ARCHITECTURE                   
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 5 — MODEL & ARCHITECTURE                                              ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab5:
     st.markdown('<div class="sec-head">Model Performance</div>', unsafe_allow_html=True)
     mc1, mc2, mc3, mc4, mc5 = st.columns(5)
@@ -823,7 +858,7 @@ with tab5:
 </div>""", unsafe_allow_html=True)
 
     st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-    st.markdown('<div class="sec-head"> Executive Portfolio Summary</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head">🤖 Executive Portfolio Summary</div>', unsafe_allow_html=True)
     if st.button("Generate Executive Summary", use_container_width=True):
         with st.spinner("Generating executive summary…"):
             from utils.llm_insights import portfolio_summary
@@ -831,11 +866,13 @@ with tab5:
         st.markdown(f'<div class="insight-box">{summary}</div>', unsafe_allow_html=True)
 
 
-#  TAB 6 — INTERVENTION PRIORITY QUEUE                                       
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  TAB 6 — INTERVENTION PRIORITY QUEUE                                       ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
 with tab6:
     from engine.decision_engine import batch_evaluate, build_priority_queue
 
-    st.markdown('<div class="sec-head"> Real-Time Intervention Priority Queue</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sec-head">🎯 Real-Time Intervention Priority Queue</div>', unsafe_allow_html=True)
     st.markdown(
         '<p style="color:#5a6a8a;font-size:.82rem;margin-bottom:1rem">'
         'Top 50 users ranked by net intervention ROI — where acting now recovers the most revenue per ₹ spent.'
@@ -888,7 +925,7 @@ with tab6:
             st.markdown("<br>", unsafe_allow_html=True)
 
             # Revenue waterfall
-            st.markdown('<div class="sec-head"> Revenue at Risk — Top 20 Users</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-head">💰 Revenue at Risk — Top 20 Users</div>', unsafe_allow_html=True)
             top_plans = sorted(
                 [p for p in plans if p.interventions and p.risk_level in ("high", "medium")],
                 key=lambda x: -x.interventions[0].priority_score,
@@ -912,7 +949,7 @@ with tab6:
             pq_c1, pq_c2 = st.columns([2, 1])
 
             with pq_c1:
-                st.markdown('<div class="sec-head"> Ranked Intervention Queue (Top 50)</div>', unsafe_allow_html=True)
+                st.markdown('<div class="sec-head">📋 Ranked Intervention Queue (Top 50)</div>', unsafe_allow_html=True)
                 if not queue_df.empty:
                     st.dataframe(
                         queue_df,
@@ -965,9 +1002,9 @@ with tab6:
                 unsafe_allow_html=True,
             )
     else:
-        st.warning(" No feature data available. Run setup.py first.")
+        st.warning("⚠️ No feature data available. Run setup.py first.")
 
-# Footer 
+# ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown(
     "<div style='text-align:center;color:#2a3a55;font-size:.72rem;margin-top:2.5rem;"
     "padding-top:1rem;border-top:1px solid #1e2a45'>"
