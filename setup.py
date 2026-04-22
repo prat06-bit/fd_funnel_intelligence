@@ -13,7 +13,7 @@ print("  FD Funnel Intelligence Engine — Setup")
 print("=" * 60)
 
 # Step 1: Generate multi-table data 
-print("\n Generating synthetic funnel dataset (2000 users)...")
+print("\n Generating synthetic funnel dataset (2000 users)")
 data = generate_fd_data(2000, save_dir=os.path.join(ROOT, "data", "raw"))
 
 users = data["users"]
@@ -25,12 +25,12 @@ print(f"      {len(users)} users | {len(events)} events | {len(transactions)} tr
 print(f"      Conversion rate: {conv_rate:.1%}")
 
 # Step 2: Feature engineering    
-print("\n Engineering features (30+ behavioral/temporal features)...")
+print("\n Engineering features (30+ behavioral/temporal features)")
 feature_df = build_features(users, events, transactions)
 print(f"      {len(feature_df)} rows x {feature_df.shape[1]} columns")
 
 # Step 3: Train models 
-print("\n Training models (conversion + drop-off + segmentation + SHAP)...")
+print("\n Training models (conversion + drop-off + segmentation + SHAP)")
 results = train_and_save(feature_df, events, model_dir=os.path.join(ROOT, "models", "saved"))
 
 print("\n" + "=" * 60)
