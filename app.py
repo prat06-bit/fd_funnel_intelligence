@@ -786,44 +786,43 @@ with tab5:
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown('<div class="sec-head">Model Comparison — Baseline vs. Primary</div>', unsafe_allow_html=True)
-    # In Tab 5 — replace the comp_df / improvement block with:
-comp_df = pd.DataFrame([
-    {
-        "Model":   comparison["baseline"]["name"],
-        "AUC":     comparison["baseline"]["auc"],
-        "F1":      comparison["baseline"]["f1"],
-        "Calibrated": "No",
-        "Note": "Threshold 0.5",
-    },
-    {
-        "Model":   comparison["primary"]["name"],
-        "AUC":     comparison["primary"]["auc"],       # raw — same basis as LR
-        "F1":      comparison["primary"]["f1"],
-        "Calibrated": "Yes (Platt)",
-        "Note": f"Calibrated AUC: {comparison.get('auc_calibrated', metrics['auc'])}",
-    },
-])
-st.dataframe(comp_df, use_container_width=True, hide_index=True)
-st.markdown(
-    f'<div class="insight-box" style="border-left-color:{COLORS["amber"]}">'
-    f'<strong style="color:#fbbf24">Note on AUC comparison:</strong> '
-    f'AUC values above compare both models uncalibrated (fair basis). '
-    f'LightGBM\'s calibrated AUC is <strong>{comparison.get("auc_calibrated", metrics["auc"])}</strong> — '
-    f'Platt calibration trades 0.004 AUC for accurate probability outputs, which is the correct '
-    f'tradeoff when downstream decisions depend on ₹ ROI calculations. '
-    f'LightGBM wins on F1 (<strong>{comparison["primary"]["f1"]}</strong> vs '
-    f'<strong>{comparison["baseline"]["f1"]}</strong>) and delivers richer '
-    f'SHAP-level explainability that a logistic model cannot.'
-    f'</div>',
-    unsafe_allow_html=True,
-)
+    comp_df = pd.DataFrame([
+        {
+            "Model":   comparison["baseline"]["name"],
+            "AUC":     comparison["baseline"]["auc"],
+            "F1":      comparison["baseline"]["f1"],
+            "Calibrated": "No",
+            "Note": "Threshold 0.5",
+        },
+        {
+            "Model":   comparison["primary"]["name"],
+            "AUC":     comparison["primary"]["auc"],       # raw — same basis as LR
+            "F1":      comparison["primary"]["f1"],
+            "Calibrated": "Yes (Platt)",
+            "Note": f"Calibrated AUC: {comparison.get('auc_calibrated', metrics['auc'])}",
+        },
+    ])
+    st.dataframe(comp_df, use_container_width=True, hide_index=True)
+    st.markdown(
+        f'<div class="insight-box" style="border-left-color:{COLORS["amber"]}">'
+        f'<strong style="color:#fbbf24">Note on AUC comparison:</strong> '
+        f'AUC values above compare both models uncalibrated (fair basis). '
+        f'LightGBM\'s calibrated AUC is <strong>{comparison.get("auc_calibrated", metrics["auc"])}</strong> — '
+        f'Platt calibration trades 0.004 AUC for accurate probability outputs, which is the correct '
+        f'tradeoff when downstream decisions depend on ₹ ROI calculations. '
+        f'LightGBM wins on F1 (<strong>{comparison["primary"]["f1"]}</strong> vs '
+        f'<strong>{comparison["baseline"]["f1"]}</strong>) and delivers richer '
+        f'SHAP-level explainability that a logistic model cannot.'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
-st.markdown('<div class="sec-head">Funnel Health Score Breakdown</div>', unsafe_allow_html=True)
-hc1, hc2, hc3, hc4 = st.columns(4)
-for col, (name, score, weight, color) in zip([hc1, hc2, hc3, hc4], [
-    ("Conv. Efficiency", health["conversion_efficiency"], "40%", COLORS["green"]),
-    ("Flow Smoothness",  health["flow_smoothness"],       "25%", COLORS["amber"]),
-    ("Model Confidence", health["model_confidence"],      "20%", COLORS["purple"]),
+    st.markdown('<div class="sec-head">Funnel Health Score Breakdown</div>', unsafe_allow_html=True)
+    hc1, hc2, hc3, hc4 = st.columns(4)
+    for col, (name, score, weight, color) in zip([hc1, hc2, hc3, hc4], [
+        ("Conv. Efficiency", health["conversion_efficiency"], "40%", COLORS["green"]),
+        ("Flow Smoothness",  health["flow_smoothness"],       "25%", COLORS["amber"]),
+        ("Model Confidence", health["model_confidence"],      "20%", COLORS["purple"]),
         ("Engagement Depth", health["engagement_depth"],      "15%", COLORS["cyan"]),
     ]):
         with col:
@@ -833,9 +832,9 @@ for col, (name, score, weight, color) in zip([hc1, hc2, hc3, hc4], [
                 unsafe_allow_html=True,
             )
 
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown('<div class="sec-head">System Architecture</div>', unsafe_allow_html=True)
-st.markdown(f"""
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="sec-head">System Architecture</div>', unsafe_allow_html=True)
+    st.markdown(f"""
 <div class="insight-box">
 <strong style="color:#cdd9f5">Architecture</strong><br><br>
 • <strong>Conversion Model</strong>: {metrics.get('model_type','LightGBM')} ({metrics.get('n_features',30)} features, calibrated with Platt scaling)<br>
@@ -850,13 +849,13 @@ st.markdown(f"""
 • <strong>LLM</strong>: NVIDIA Llama-3.3-70B (structured intervention generation)
 </div>""", unsafe_allow_html=True)
 
-st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
-st.markdown('<div class="sec-head"> Executive Portfolio Summary</div>', unsafe_allow_html=True)
-if st.button("Generate Executive Summary", use_container_width=True):
-    with st.spinner("Generating executive summary…"):
-        from utils.llm_insights import portfolio_summary
-        summary = portfolio_summary(metrics, health, len(df), comparison)
-        st.markdown(f'<div class="insight-box">{summary}</div>', unsafe_allow_html=True)
+    st.markdown("<hr style='border-color:#1e2a45;margin:2rem 0'>", unsafe_allow_html=True)
+    st.markdown('<div class="sec-head"> Executive Portfolio Summary</div>', unsafe_allow_html=True)
+    if st.button("Generate Executive Summary", use_container_width=True):
+        with st.spinner("Generating executive summary…"):
+            from utils.llm_insights import portfolio_summary
+            summary = portfolio_summary(metrics, health, len(df), comparison)
+            st.markdown(f'<div class="insight-box">{summary}</div>', unsafe_allow_html=True)
 
 
 
