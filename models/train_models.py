@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from features.pipeline import FEATURE_COLS, TARGET_COL, STAGE_ORDER
 
 
-#    Segment labels     
+#  Segment labels 
 SEGMENT_LABELS_LIST = [
     "🟢 High-Value Converters",
     "🔵 Exploring Newcomers",
@@ -41,7 +41,6 @@ SEGMENT_LABELS_LIST = [
     "🔴 Dormant Drop-offs",
 ]
 
-#  Drop-off model: leak-free feature set  
 _DROP_FEATURE_COLS = [
     "age", "city_tier", "income_num", "device_mobile",
     "referral_paid", "referral_partner",
@@ -149,15 +148,17 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
     print(f"    Baseline AUC: {lr_auc:.4f} | F1: {lr_f1:.4f}")
 
     primary_f1 = report["1"]["f1-score"]
+
     model_comparison = {
         "baseline": {"name": "Logistic Regression", "auc": round(lr_auc, 4), "f1": round(lr_f1, 4)},
         "primary":  {
             "name": "LightGBM" if HAS_LIGHTGBM else "XGBoost",
-            "auc":  round(auc, 4),
+            "auc":  round(auc_raw, 4),  
             "f1":   round(primary_f1, 4),
         },
-        "improvement_auc": round((auc - lr_auc) / max(lr_auc, 1e-9) * 100, 1),
+        "improvement_auc": round((auc_raw - lr_auc) / max(lr_auc, 1e-9) * 100, 1),
         "improvement_f1":  round((primary_f1 - lr_f1) / max(lr_f1, 0.01) * 100, 1),
+        "auc_calibrated":  round(auc, 4),
     }
 
     #  MODEL 2: Drop-off Stage Predictor 
@@ -251,7 +252,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         clean_label = p["label"].encode("ascii", "ignore").decode().strip()
         print(f"      {clean_label}: {p['size']} users, {p['conversion_rate']:.1%} conv")
 
-    #  SHAP Explainability 
+    #  SHAP Explainability
     print("\n  Computing SHAP values")
 
     shap_values_test = None
@@ -309,7 +310,7 @@ def train_and_save(feature_df: pd.DataFrame, events_df: pd.DataFrame,
         for i in range(1, len(stage_list))
     }
 
-    # Save all artifacts 
+    #  Save all artifacts 
     print("\n  Saving artifacts")
 
     def _dump(obj, name):
